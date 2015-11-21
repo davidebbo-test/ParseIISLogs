@@ -19,6 +19,7 @@ namespace ParseIISLogs
             string month = args[1];
 
             var users = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var usersInRegion = new Dictionary<string, HashSet<string>>();
 
             var allLogs = Directory.EnumerateFiles(".", "*.log", SearchOption.AllDirectories);
 
@@ -33,10 +34,24 @@ namespace ParseIISLogs
                     string user = parts[7];
                     if (user.Length < 2) continue;
                     users.Add(user);
+
+                    // e.g. EXPLORER-HK1__24C4 -> HK1
+                    string region = parts[2].Substring(9, 3);
+                    HashSet<string> regionHashSet;
+                    if (!usersInRegion.TryGetValue(region, out regionHashSet))
+                    {
+                        regionHashSet = usersInRegion[region] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    }
+                    regionHashSet.Add(user);
                 }
             }
 
             Console.WriteLine($"Distinct users: {users.Count}");
+
+            foreach (var region in usersInRegion.Keys)
+            {
+                Console.WriteLine($"{region}: {usersInRegion[region].Count}");
+            }
 
             //Console.WriteLine("***************************");
 
