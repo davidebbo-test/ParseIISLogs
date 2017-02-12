@@ -20,6 +20,8 @@ namespace ParseIISLogs
 
             var users = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var usersInRegion = new Dictionary<string, HashSet<string>>();
+            int requestCount = 0;
+            int armRequestCount = 0;
 
             var allLogs = Enumerable.Empty<string>();
 
@@ -42,6 +44,11 @@ namespace ParseIISLogs
                     if (!line.Contains('@')) continue;
 
                     var parts = line.Split(' ');
+
+                    requestCount++;
+                    if (parts[3] == "POST" && parts[4] =="/api/operations")
+                        armRequestCount++;
+
                     string user = parts[7];
                     if (user.Length < 2) continue;
                     users.Add(user);
@@ -63,6 +70,10 @@ namespace ParseIISLogs
             {
                 Console.WriteLine($"{region}: {usersInRegion[region].Count}");
             }
+
+            Console.WriteLine($"Total requests: {requestCount}");
+            Console.WriteLine($"Total ARM requests: {armRequestCount}");
+
 
             //Console.WriteLine("***************************");
 
