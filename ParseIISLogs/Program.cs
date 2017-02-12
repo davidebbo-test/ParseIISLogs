@@ -21,7 +21,18 @@ namespace ParseIISLogs
             var users = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var usersInRegion = new Dictionary<string, HashSet<string>>();
 
-            var allLogs = Directory.EnumerateFiles(".", "*.log", SearchOption.AllDirectories);
+            var allLogs = Enumerable.Empty<string>();
+
+            // Find all the subtrees that match this year/month
+            foreach (var topLevelDir in Directory.EnumerateDirectories("."))
+            {
+                string targetSubDir = Path.Combine(topLevelDir, year, month);
+                if (Directory.Exists(targetSubDir))
+                {
+                    var logs = Directory.EnumerateFiles(targetSubDir, "*.log", SearchOption.AllDirectories);
+                    allLogs = allLogs.Concat(logs);
+                }
+            }
 
             // e.g. .\EXPLORER-BAY\2015\07\03\02
             foreach (string file in allLogs.Where(s => { var segments = s.Split('\\'); return segments[2] == year && segments[3] == month; }))
